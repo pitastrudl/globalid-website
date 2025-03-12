@@ -2,9 +2,15 @@ name: Deploy
 
 on:
   push:
-    branches: #remove after finish testing
+    branches:
       - main
+    paths:
+      - website/**
+      - github/**
+
   pull_request:
+    types:
+      - closed
     branches:
       - main
 
