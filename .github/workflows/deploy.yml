@@ -50,10 +50,12 @@ jobs:
       - name: Check if added_files.txt is empty or missing
         id: check-file
         run: |
-          if [ ! -f ".github/outputs/added_files.txt" ] || [ ! -s ".github/outputs/added_files.txt" ]; then
+          if [ ! -s ".github/outputs/added_files.txt" ]; then
             echo "FILE_EMPTY=false" >> $GITHUB_ENV
+            ls -la .github/outputs/
           else
             echo "FILE_EMPTY=true" >> $GITHUB_ENV
+            ls -la .github/outputs/
           fi
 
       - name: Debug - Show file contents
