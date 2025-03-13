@@ -1,7 +1,6 @@
 # GlobalID website
 
-A new shiny websiste for the globalID company. The website is hosted via CloudFront from a statically hosted S3 Bucket. Website template was borrowed from https://github.com/designmodo/html-website-templates.
-
+A new shiny websiste for the globalID company. The website is hosted via CloudFront from a statically hosted S3 Bucket. Website template was borrowed from https://github.com/designmodo/html-website-templates. P.S. this a mock repository.
 ## Getting Started
 
 This application is primarily designed to be deployed via S3 Website endpoint hosting fronted by AWS CloudFront. You will need an AWS account. Of course this can be served via any modern webserver.
