@@ -16,7 +16,7 @@ on:
 
 jobs:
   upload:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Add a linting job
     steps:
       - name: Checkout Code
@@ -32,7 +32,7 @@ jobs:
       - name: Upload Files to S3
         run: aws s3 sync website/ s3://${{ secrets.AWS_BUCKET }}/ --delete
   invalidate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
