@@ -33,6 +33,7 @@ jobs:
         run: aws s3 sync website/ s3://${{ secrets.AWS_BUCKET }}/ --delete
   invalidate:
     runs-on: ubuntu-24.04
+    needs: upload
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
