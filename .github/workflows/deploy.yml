@@ -37,24 +37,30 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
 
-      - name: Get all changed files and use a comma separator in the output
+      - name: Get all changed files and use a space separator in the output
         id: changed-files
         uses: tj-actions/changed-files@v45.0.7
         with:
           separator: " "
+          write_output_files: true
           files: |
             website/**
 
-      - name: List all changed files # Added as debug, remove later
-        env:
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-        run: echo "${ALL_CHANGED_FILES}"
+      - name: Verify the contents of the .github/outputs/added_files.txt file # remove later, debug
+        run: |
+          cat .github/outputs/added_files.txt
 
-      - name: Invalidate cache on index.html
+      - name: Transform paths (Replace website/ with /)
+        run: |
+          sed -i  's#website/##g' added_files.txt
+          echo "TRANSFORMED_PATHS=$(cat changed_files.txt)" >> $GITHUB_ENV
+          echo "$TRANSFORMED_PATHS"
+
+      - name: Invalidate cache on changed files
         uses: chetan/invalidate-cloudfront-action@v2.4
         env:
           DISTRIBUTION: ${{ secrets.DISTRIBUTION }}
-          PATHS: "${ALL_CHANGED_FILES}"
+          PATHS_FROM: changed_files.txt
           AWS_REGION: "us-east-1"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
