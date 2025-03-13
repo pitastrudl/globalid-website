@@ -50,3 +50,5 @@ You may also use this repo to automate the deployments. The deploy actions will 
 - Access for the Github Actions to AWS resources could be done by using an IAM role
 - Use conventional commits
 - Add releases on builds from main
+- For better security posture, custom scripts could be developed for CloudFront invalidations instead of using GH premade Actions
+- Make deployments only on merged PRs and protect the main branch
