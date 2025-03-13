@@ -47,21 +47,20 @@ jobs:
           files: |
             website/**
 
-      - name: Skip job if added_files.txt does not exist
-        if: ${{ !hashFiles('.github/outputs/added_files.txt') }}
-        run: echo "File does not exist, no changes detected, skipping job." && exit 0
-
       - name: Verify the contents of the .github/outputs/added_files.txt file # remove later, debug
+        if: ${{ hashFiles('.github/outputs/added_files.txt') }}
         run: |
           cat .github/outputs/added_files.txt
 
       - name: Transform paths (Replace website/ with /)
+        if: ${{ hashFiles('.github/outputs/added_files.txt') }}
         run: |
           sed -i  's#website/##g' added_files.txt
           echo "TRANSFORMED_PATHS=$(cat changed_files.txt)" >> $GITHUB_ENV
           echo "$TRANSFORMED_PATHS"
 
       - name: Invalidate cache on changed files
+        if: ${{ hashFiles('.github/outputs/added_files.txt') }}
         uses: chetan/invalidate-cloudfront-action@v2.4
         env:
           DISTRIBUTION: ${{ secrets.DISTRIBUTION }}
