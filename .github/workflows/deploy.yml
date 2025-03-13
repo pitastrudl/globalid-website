@@ -46,6 +46,10 @@ jobs:
           files: |
             website/**
 
+      - name: Skip job if added_files.txt does not exist
+        if: ${{ !hashFiles('.github/outputs/added_files.txt') }}
+        run: echo "File does not exist, no changes detected, skipping job." && exit 0
+
       - name: Verify the contents of the .github/outputs/added_files.txt file # remove later, debug
         run: |
           cat .github/outputs/added_files.txt
