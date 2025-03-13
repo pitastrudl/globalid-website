@@ -47,10 +47,10 @@ jobs:
           files: |
             website/**
 
-      - name: Check if added_files.txt is empty or missing
+      - name: Check if all_changed_files.txt is empty or missing
         id: check-file
         run: |
-          if [ -s ".github/outputs/added_files.txt" ]; then
+          if [ -s ".github/outputs/all_changed_files.txt" ]; then
             echo "FILE_EMPTY=false" >> $GITHUB_ENV
             ls -la .github/outputs/
           else
@@ -60,19 +60,19 @@ jobs:
 
       - name: Debug - Show file contents
         if: env.FILE_EMPTY == 'false'
-        run: cat .github/outputs/added_files.txt
+        run: cat .github/outputs/all_changed_files.txt
 
       - name: Transform paths (Replace website/ with /)
         if: env.FILE_EMPTY == 'false'
         run: |
-          sed -i 's#website/##g' .github/outputs/added_files.txt
+          sed -i 's#website/##g' .github/outputs/all_changed_files.txt
 
       - name: Invalidate CloudFront cache on changed files
         if: env.FILE_EMPTY == 'false'
         uses: chetan/invalidate-cloudfront-action@v2.4
         env:
           DISTRIBUTION: ${{ secrets.DISTRIBUTION }}
-          PATHS_FROM: .github/outputs/added_files.txt
+          PATHS_FROM: .github/outputs/all_changed_files.txt
           AWS_REGION: "us-east-1"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
