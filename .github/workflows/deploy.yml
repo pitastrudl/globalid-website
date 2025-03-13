@@ -47,24 +47,30 @@ jobs:
           files: |
             website/**
 
-      - name: Verify the contents of the .github/outputs/added_files.txt file # remove later, debug
-        if: ${{ hashFiles('.github/outputs/added_files.txt') }}
+      - name: Check if added_files.txt is empty or missing
+        id: check-file
         run: |
-          cat .github/outputs/added_files.txt
+          if [ -s .github/outputs/added_files.txt ]; then
+            echo "FILE_EMPTY=false" >> $GITHUB_ENV
+          else
+            echo "FILE_EMPTY=true" >> $GITHUB_ENV
+          fi
+
+      - name: Debug - Show file contents
+        if: env.FILE_EMPTY == 'false'
+        run: cat .github/outputs/added_files.txt
 
       - name: Transform paths (Replace website/ with /)
-        if: ${{ hashFiles('.github/outputs/added_files.txt') }}
+        if: env.FILE_EMPTY == 'false'
         run: |
-          sed -i  's#website/##g' added_files.txt
-          echo "TRANSFORMED_PATHS=$(cat changed_files.txt)" >> $GITHUB_ENV
-          echo "$TRANSFORMED_PATHS"
+          sed -i 's#website/##g' .github/outputs/added_files.txt
 
       - name: Invalidate cache on changed files
-        if: ${{ hashFiles('.github/outputs/added_files.txt') }}
+        if: env.FILE_EMPTY == 'false'
         uses: chetan/invalidate-cloudfront-action@v2.4
         env:
           DISTRIBUTION: ${{ secrets.DISTRIBUTION }}
-          PATHS_FROM: changed_files.txt
+          PATHS_FROM: .github/outputs/added_files.txt
           AWS_REGION: "us-east-1"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
