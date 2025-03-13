@@ -50,7 +50,7 @@ jobs:
       - name: Check if added_files.txt is empty or missing
         id: check-file
         run: |
-          if [ ! -s ".github/outputs/added_files.txt" ]; then
+          if [ -s ".github/outputs/added_files.txt" ]; then
             echo "FILE_EMPTY=false" >> $GITHUB_ENV
             ls -la .github/outputs/
           else
@@ -67,7 +67,7 @@ jobs:
         run: |
           sed -i 's#website/##g' .github/outputs/added_files.txt
 
-      - name: Invalidate cache on changed files
+      - name: Invalidate CloudFront cache on changed files
         if: env.FILE_EMPTY == 'false'
         uses: chetan/invalidate-cloudfront-action@v2.4
         env:
