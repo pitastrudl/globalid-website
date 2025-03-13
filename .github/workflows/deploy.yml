@@ -34,6 +34,9 @@ jobs:
   invalidate:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
       - name: Get all changed files and use a comma separator in the output
         id: changed-files
         uses: tj-actions/changed-files@v45.0.7
