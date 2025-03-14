@@ -16,6 +16,7 @@ What things you need to deploy:
 - A DNS record in Route53
 - Provisioned SSL certificate in ACM
 - Custom policies for deployment of website
+- Provisioned IAM role (Least privelage approach) with a separate user for deployment
 ```
 
 ### Installing
@@ -43,12 +44,13 @@ You may also use this repo to automate the deployments. The deploy actions will 
   - Automate S3, Cloudfront, Route 53 creation with custom policies
 - Decrease caching TTL on HTML files in CloudFront, so users get the most fresh version of the website
 - Disable compression on non-compressible files (tar,zips etc)
+- Use GitHub OIDC for setting up AWS credentials in the Github Actions
 
 ### Git/Deployments
 
 - Add linting job and code scanning to GH Actions
 - Use conventional commits
-- Add releases on builds from main
-- For better security posture, custom scripts could be developed for CloudFront invalidations instead of using GH premade Actions
+- Add releases on builds from main branch
+- For better security posture, custom scripts could be developed for CloudFront invalidations and AWS credentials setup instead of using GH premade Actions
 - Make deployments only on merged PRs and protect the main branch
 - If ingress data would be a concern, s3 sync could be done with an --update switch.
