@@ -1,6 +1,7 @@
 # GlobalID website
 
-A new shiny websiste for the globalID company. The website is hosted via CloudFront from a statically hosted S3 Bucket. Website template was borrowed from https://github.com/designmodo/html-website-templates. P.S. this a mock repository.
+A new shiny websiste for the globalID company. The website is hosted via CloudFront from a statically hosted S3 Bucket. Website template was borrowed from https://github.com/designmodo/html-website-templates.
+> P.S. this a mock repository.
 ## Getting Started
 
 This application is primarily designed to be deployed via S3 Website endpoint hosting fronted by AWS CloudFront. You will need an AWS account. Of course this can be served via any modern webserver.
@@ -46,7 +47,6 @@ You may also use this repo to automate the deployments. The deploy actions will 
 ### Git/Deployments
 
 - Add linting job and code scanning to GH Actions
-- Access for the Github Actions to AWS resources could be done by using an IAM role
 - Use conventional commits
 - Add releases on builds from main
 - For better security posture, custom scripts could be developed for CloudFront invalidations instead of using GH premade Actions
