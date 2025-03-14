@@ -58,16 +58,12 @@ jobs:
             ls -la .github/outputs/
           fi
 
-      - name: Debug - Show file contents
-        if: env.FILE_EMPTY == 'false'
-        run: cat .github/outputs/all_changed_files.txt
-
-      - name: Transform paths (Replace website/ with /)
+      - name: Transform paths (Replace website/ with /) due to different location in s3 bucket
         if: env.FILE_EMPTY == 'false'
         run: |
           sed -i 's#website##g' .github/outputs/all_changed_files.txt
 
-      - name: Invalidate CloudFront cache on changed files
+      - name: Invalidate CloudFront cache on changed files or added files
         if: env.FILE_EMPTY == 'false'
         uses: chetan/invalidate-cloudfront-action@v2.4
         env:
