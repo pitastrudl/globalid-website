@@ -22,21 +22,40 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4.1.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # Change if needed
+      - name: Assume AWS role
+        run: |
+          CREDENTIALS=$(aws sts assume-role --role-arn "${{ secrets.AWS_ROLE_ARN }}"  --role-session-name "GitHubActions-${{ github.run_id }}")
+
+          export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')
+          export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')
+          export AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')
+
+          echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
 
       - name: Upload Files to S3
         run: aws s3 sync website/ s3://${{ secrets.AWS_BUCKET }}/ --delete
+
   invalidate:
     runs-on: ubuntu-24.04
     needs: upload
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
+
+      - name: Assume AWS role
+        run: |
+          CREDENTIALS=$(aws sts assume-role --role-arn "${{ secrets.AWS_ROLE_ARN }}"  --role-session-name "GitHubActions-${{ github.run_id }}")
+
+          export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')
+          export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')
+          export AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')
+
+          echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> $GITHUB_ENV
 
       - name: Get all changed files and use a space separator in the output
         id: changed-files
@@ -70,5 +89,5 @@ jobs:
           DISTRIBUTION: ${{ secrets.DISTRIBUTION }}
           PATHS_FROM: .github/outputs/all_changed_files.txt
           AWS_REGION: "us-east-1"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
