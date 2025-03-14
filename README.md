@@ -11,7 +11,7 @@ What things you need to deploy:
 
 ```
 - Provisioned S3 Bucket with custom bucket policies and enabled static website hosting
-- CloudFront distribution with S3 as the origin and OAC
+- CloudFront distribution with S3 as the origin, OAC enabled and index.html as root
 - A DNS record in Route53
 - Provisioned SSL certificate in ACM
 - Custom policies for deployment of website
@@ -39,13 +39,13 @@ You may also use this repo to automate the deployments. The deploy actions will 
 
 ### AWS
 - The AWS infrastructure could be provisioned via Terraform
-  - Automate S3, Cloudfront, Route 53 creation
-- Decrease caching TTL on HTML files in CloudFront, so users get the most fresh version
-- Disable compression on non-compressible files
+  - Automate S3, Cloudfront, Route 53 creation with custom policies
+- Decrease caching TTL on HTML files in CloudFront, so users get the most fresh version of the website
+- Disable compression on non-compressible files (tar,zips etc)
 
 ### Git/Deployments
 
-- Add linting job to GH Actions
+- Add linting job and code scanning to GH Actions
 - Access for the Github Actions to AWS resources could be done by using an IAM role
 - Use conventional commits
 - Add releases on builds from main
