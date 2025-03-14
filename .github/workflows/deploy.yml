@@ -65,7 +65,7 @@ jobs:
       - name: Transform paths (Replace website/ with /)
         if: env.FILE_EMPTY == 'false'
         run: |
-          sed -i 's#website/##g' .github/outputs/all_changed_files.txt
+          sed -i 's#website##g' .github/outputs/all_changed_files.txt
 
       - name: Invalidate CloudFront cache on changed files
         if: env.FILE_EMPTY == 'false'
