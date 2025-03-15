@@ -1,7 +1,7 @@
 <?php
 
 /* SETTINGS */
-$recipient = "your.identity@globalid.com";
+$recipient = "yours.identity@globalid.com";
 $subject = "New Message from Contact Form";
 
 if($_POST){
@@ -41,3 +41,9 @@ if($_POST){
   mail($recipient, $emailSubject, $mailBody, $headers);
 }
 ?>
+12691
+12381
+19978
+31204
+6535
+7445
