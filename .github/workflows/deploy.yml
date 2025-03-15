@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - fix/changed_files
     paths:
       - website/**
       - .github/**
@@ -49,8 +50,10 @@ jobs:
     runs-on: ubuntu-24.04
     needs: upload
     steps:
-      - name: Checkout Code
+      - name: Checkout code with extended history
         uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
@@ -70,38 +73,27 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV
           echo "AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
 
-      - name: Get all changed files and use a space separator in the output
+      - name: Get changed files in website/
         id: changed-files
-        uses: tj-actions/changed-files@v45.0.7
-        with:
-          separator: " "
-          write_output_files: true
-          files: |
-            website/**
-
-      - name: Check if all_changed_files.txt is empty or missing
-        id: check-file
         run: |
-          if [ -s ".github/outputs/all_changed_files.txt" ]; then
-            echo "FILE_EMPTY=false" >> $GITHUB_ENV
-            ls -la .github/outputs/
+          echo "Comparing commits: ${{ github.event.before }}  -> ${{ github.event.after }}"
+          export CHANGED_FILES=$(git diff --name-only ${{ github.event.before }}  ${{ github.event.after }} | grep '^website/' | sed 's#website/#/#' | awk '{printf "\"%s\" ", $0} END {print ""}' )
+          echo "CHANGED_FILES: '$CHANGED_FILES'"
+
+          if [[ -z "$CHANGED_FILES"  ]]; then
+            echo "No files changed in website/. Skipping invalidation."
+            echo "FILES_CHANGED=false" >> $GITHUB_ENV
           else
-            echo "FILE_EMPTY=true" >> $GITHUB_ENV
-            ls -la .github/outputs/
+            echo "FILES_CHANGED=true" >> $GITHUB_ENV
+            echo "CHANGED_FILES=${CHANGED_FILES}" >> $GITHUB_ENV
           fi
 
-      - name: Transform paths (Replace website/ with /) due to different location in s3 bucket
-        if: env.FILE_EMPTY == 'false'
-        run: |
-          sed -i 's#website##g' .github/outputs/all_changed_files.txt
+      - name: debug
+        if: env.FILES_CHANGED == 'true'
+        run: echo $CHANGED_FILES
 
-      - name: Invalidate CloudFront cache on changed files or added files
-        if: env.FILE_EMPTY == 'false'
-        uses: chetan/invalidate-cloudfront-action@v2.4
-        env:
-          DISTRIBUTION: ${{ secrets.DISTRIBUTION }}
-          PATHS_FROM: .github/outputs/all_changed_files.txt
-          AWS_REGION: "us-east-1"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Invalidate files on CloudFront
+        if: env.FILES_CHANGED == 'true'
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION }} --paths $(echo $CHANGED_FILES | xargs)
