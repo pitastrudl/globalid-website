@@ -1,0 +1,50 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - website/**
+      - .github/**
+
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  invalidate:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Checkout Code (Full History)
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 1 # ✅ Ensure full commit history is available
+      - name: log newly committed messages
+        env:
+          BEFORE_REF: ${{ github.event.before }}
+          AFTER_REF: ${{ github.event.after }}
+        run: echo "$BEFORE_REF...$AFTER_REF"
+
+      - name: Get changed files in website/
+        id: changed-files
+        run: |
+          echo "Comparing commits: ${{ github.event.before }}  -> ${{ github.event.after }}"
+          echo "${{ github.event.before }} "
+          # Get changed files inside `website/`
+          git diff --name-only ${{ github.event.before }}  ${{ github.event.after }} | grep '^website/' | sed 's#website/##' > changed_files.txt || true
+
+          # Determine if invalidation is needed
+          if [ -s changed_files.txt ]; then
+            echo "File changes detected in website/. Proceeding with invalidation:"
+            cat changed_files.txt
+            echo "file_empty=false" >> $GITHUB_ENV
+          else
+            echo "No relevant changes detected. Skipping invalidation."
+            echo "file_empty=true" >> $GITHUB_ENV
+          fi
