@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - fix/changed_files
     paths:
       - website/**
       - .github/**
