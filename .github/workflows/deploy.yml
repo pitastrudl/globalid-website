@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/secure_envs
     paths:
       - website/**
       - .github/**
@@ -27,22 +28,21 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # Change if needed
+          aws-region: us-east-1
 
-      - name: Assume AWS role
+      - name: Assume AWS Role
+        id: assume-role
         run: |
-          CREDENTIALS=$(aws sts assume-role --role-arn "${{ secrets.AWS_ROLE_ARN }}"  --role-session-name "GitHubActions-${{ github.run_id }}")
-
-          export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')
-          export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')
-          export AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')
-
-          echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV
-          echo "AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> $GITHUB_ENV
-          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+          CREDENTIALS=$(aws sts assume-role --role-arn "${{ secrets.AWS_ROLE_ARN }}" --role-session-name "GitHubActions-${{ github.run_id }}")
+          echo "AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')" >> $GITHUB_OUTPUT
+          echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')" >> $GITHUB_OUTPUT
+          echo "AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')" >> $GITHUB_OUTPUT
 
       - name: Upload Files to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.assume-role.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.assume-role.outputs.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ steps.assume-role.outputs.AWS_SESSION_TOKEN }}
         run: aws s3 sync website/ s3://${{ secrets.AWS_BUCKET }}/ --delete
 
   invalidate:
@@ -62,24 +62,19 @@ jobs:
           aws-region: us-east-1 # Change if needed
 
       - name: Assume AWS role
+        id: assume-role
         run: |
-          CREDENTIALS=$(aws sts assume-role --role-arn "${{ secrets.AWS_ROLE_ARN }}"  --role-session-name "GitHubActions-${{ github.run_id }}")
-
-          export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')
-          export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')
-          export AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')
-
-          echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV
-          echo "AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" >> $GITHUB_ENV
-          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+          CREDENTIALS=$(aws sts assume-role --role-arn "${{ secrets.AWS_ROLE_ARN }}" --role-session-name "GitHubActions-${{ github.run_id }}")
+          echo "AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')" >> $GITHUB_OUTPUT
+          echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')" >> $GITHUB_OUTPUT
+          echo "AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')" >> $GITHUB_OUTPUT
 
       - name: Get changed files in website/
         id: changed-files
         run: |
           echo "Comparing commits: ${{ github.event.before }}  -> ${{ github.event.after }}"
           export CHANGED_FILES=$(git diff --name-only ${{ github.event.before }}  ${{ github.event.after }} | grep '^website/' | sed 's#website/#/#' | awk '{printf "\"%s\" ", $0} END {print ""}' )
-          echo "CHANGED_FILES: '$CHANGED_FILES'"
+
 
           if [[ -z "$CHANGED_FILES"  ]]; then
             echo "No files changed in website/. Skipping invalidation."
@@ -89,10 +84,10 @@ jobs:
             echo "CHANGED_FILES=${CHANGED_FILES}" >> $GITHUB_ENV
           fi
 
-      - name: debug
-        if: env.FILES_CHANGED == 'true'
-        run: echo $CHANGED_FILES
-
       - name: Invalidate files on CloudFront
         if: env.FILES_CHANGED == 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.assume-role.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.assume-role.outputs.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ steps.assume-role.outputs.AWS_SESSION_TOKEN }}
         run: aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION }} --paths $(echo $CHANGED_FILES | xargs)
