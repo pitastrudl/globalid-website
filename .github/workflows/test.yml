@@ -1,4 +1,4 @@
-name: Deploy
+name: Test
 
 on:
   push:
@@ -36,10 +36,8 @@ jobs:
         run: |
           echo "Comparing commits: ${{ github.event.before }}  -> ${{ github.event.after }}"
           echo "${{ github.event.before }} "
-          # Get changed files inside `website/`
           git diff --name-only ${{ github.event.before }}  ${{ github.event.after }} | grep '^website/' | sed 's#website/##' > changed_files.txt || true
 
-          # Determine if invalidation is needed
           if [ -s changed_files.txt ]; then
             echo "File changes detected in website/. Proceeding with invalidation:"
             cat changed_files.txt
