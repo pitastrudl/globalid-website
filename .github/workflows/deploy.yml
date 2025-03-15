@@ -47,7 +47,6 @@ jobs:
         run: aws s3 sync website/ s3://${{ secrets.AWS_BUCKET }}/ --delete
 
   invalidate:
-    if: false
     runs-on: ubuntu-24.04
     needs: upload
     steps:
