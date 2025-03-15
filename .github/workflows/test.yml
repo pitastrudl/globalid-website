@@ -17,7 +17,7 @@ on:
       - fix/changed_files
 
 jobs:
-  invalidate:
+  test:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Code
@@ -26,7 +26,7 @@ jobs:
       - name: Checkout Code (Full History)
         uses: actions/checkout@v4.2.2
         with:
-          fetch-depth: 1 # ✅ Ensure full commit history is available
+          fetch-depth: 0 # ✅ Ensure full commit history is available
       - name: log newly committed messages
         env:
           BEFORE_REF: ${{ github.event.before }}
