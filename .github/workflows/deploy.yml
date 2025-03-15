@@ -97,5 +97,5 @@ jobs:
           DISTRIBUTION: ${{ secrets.DISTRIBUTION }}
           PATHS_FROM: changed_files.txt
           AWS_REGION: "us-east-1"
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
