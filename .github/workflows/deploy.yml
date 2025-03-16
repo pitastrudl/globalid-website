@@ -34,11 +34,20 @@ jobs:
         id: assume-role
         run: |
           CREDENTIALS=$(aws sts assume-role --role-arn "${{ secrets.AWS_ROLE_ARN }}" --role-session-name "GitHubActions-${{ github.run_id }}")
-          echo "AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')" >> $GITHUB_OUTPUT
-          echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')" >> $GITHUB_OUTPUT
-          echo "AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')" >> $GITHUB_OUTPUT
 
-      - name: Upload Files to S3
+          ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')
+          SECRET_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')
+          SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')
+
+          echo "::add-mask::$ACCESS_KEY"
+          echo "::add-mask::$SECRET_KEY"
+          echo "::add-mask::$SESSION_TOKEN"
+
+          echo "AWS_ACCESS_KEY_ID=$ACCESS_KEY" >> $GITHUB_OUTPUT
+          echo "AWS_SECRET_ACCESS_KEY=$SECRET_KEY" >> $GITHUB_OUTPUT
+          echo "AWS_SESSION_TOKEN=$SESSION_TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Upload Files to S3 Securely
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.assume-role.outputs.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.assume-role.outputs.AWS_SECRET_ACCESS_KEY }}
@@ -65,9 +74,18 @@ jobs:
         id: assume-role
         run: |
           CREDENTIALS=$(aws sts assume-role --role-arn "${{ secrets.AWS_ROLE_ARN }}" --role-session-name "GitHubActions-${{ github.run_id }}")
-          echo "AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')" >> $GITHUB_OUTPUT
-          echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')" >> $GITHUB_OUTPUT
-          echo "AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')" >> $GITHUB_OUTPUT
+
+          ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.AccessKeyId')
+          SECRET_KEY=$(echo $CREDENTIALS | jq -r '.Credentials.SecretAccessKey')
+          SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.Credentials.SessionToken')
+
+          echo "::add-mask::$ACCESS_KEY"
+          echo "::add-mask::$SECRET_KEY"
+          echo "::add-mask::$SESSION_TOKEN"
+
+          echo "AWS_ACCESS_KEY_ID=$ACCESS_KEY" >> $GITHUB_OUTPUT
+          echo "AWS_SECRET_ACCESS_KEY=$SECRET_KEY" >> $GITHUB_OUTPUT
+          echo "AWS_SESSION_TOKEN=$SESSION_TOKEN" >> $GITHUB_OUTPUT
 
       - name: Get changed files in website/
         id: changed-files
