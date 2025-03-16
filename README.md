@@ -51,6 +51,6 @@ You may also use this repo to automate the deployments. The deploy actions will 
 - Add linting job and code scanning to GH Actions
 - Use conventional commits
 - Add releases on builds from main branch
-- For better security posture, custom scripts could be developed for CloudFront invalidations and AWS credentials setup instead of using GH premade Actions
+- ~~For better security posture, custom scripts could be developed for CloudFront invalidations and AWS credentials setup instead of using GH premade Actions~~
 - Make deployments only on merged PRs and protect the main branch
 - If ingress data would be a concern, s3 sync could be done with an --update switch.
