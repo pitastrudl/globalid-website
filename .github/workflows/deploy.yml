@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/secure_envs
     paths:
       - website/**
       - .github/**
